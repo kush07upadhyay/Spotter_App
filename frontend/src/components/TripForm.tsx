@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MapPin, Navigation, Package, Clock, Loader2 } from 'lucide-react';
 import { LocationInput } from './LocationInput';
+import { InfoTooltip } from './InfoTooltip';
 
 interface TripFormProps {
   onSubmit: (data: {
@@ -33,6 +34,7 @@ export function TripForm({ onSubmit, loading }: TripFormProps) {
       <h2 className="text-lg font-semibold text-slate-800 mb-5 flex items-center gap-2">
         <Navigation className="w-5 h-5 text-[#1e3a5f]" />
         Trip Details
+        <InfoTooltip text="Enter your trip info below. The app will calculate your full route with all required HOS stops (30-min breaks, 10-hr rest, fuel) and generate compliant ELD daily logs automatically." />
       </h2>
 
       <div className="space-y-4">
@@ -42,6 +44,7 @@ export function TripForm({ onSubmit, loading }: TripFormProps) {
             <span className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-blue-500" />
               Current Location
+              <InfoTooltip text="Where your truck is right now. This is your starting point — the app will plan the route from here to pickup and then to delivery." />
             </span>
           </label>
           <LocationInput
@@ -61,6 +64,7 @@ export function TripForm({ onSubmit, loading }: TripFormProps) {
             <span className="flex items-center gap-1.5">
               <Package className="w-3.5 h-3.5 text-emerald-500" />
               Pickup Location
+              <InfoTooltip text="The shipper's location where you'll load cargo. You'll go On Duty here for about 1 hour for pre-trip inspection and loading." />
             </span>
           </label>
           <LocationInput
@@ -80,6 +84,7 @@ export function TripForm({ onSubmit, loading }: TripFormProps) {
             <span className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-red-500" />
               Dropoff Location
+              <InfoTooltip text="The receiver's location where you'll deliver cargo. You'll go On Duty here for about 1 hour for unloading and paperwork." />
             </span>
           </label>
           <LocationInput
@@ -99,6 +104,7 @@ export function TripForm({ onSubmit, loading }: TripFormProps) {
             <span className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-amber-500" />
               Current Cycle Used (hrs)
+              <InfoTooltip text="Your total on-duty + driving hours from the last 7-8 days (check your ELD). Under the 70-hour/8-day rule, you cannot exceed 70 hours. Enter 0 if you've taken a 34-hour restart." />
             </span>
           </label>
           <div className="relative">
