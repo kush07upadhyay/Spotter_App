@@ -35,7 +35,7 @@ export function LogSheet({ log, dayNumber, totalDays, currentCycleUsed }: LogShe
     if (!ctx) return;
 
     const W = 1100;
-    const H = 750;
+    const H = 780;
     const dpr = window.devicePixelRatio || 1;
     canvas.width = W * dpr;
     canvas.height = H * dpr;
@@ -372,7 +372,7 @@ function renderLog(
   ctx.textAlign = 'left';
 
   // ══════════════════════════════════════════════════════════════════════════
-  // REMARKS SECTION
+  // REMARKS SECTION — Two-column layout to prevent overflow
   // ══════════════════════════════════════════════════════════════════════════
   const RY = GRID_TOP + GRID_H + 40;
   ctx.fillStyle = '#0f172a';
@@ -387,31 +387,44 @@ function renderLog(
   ctx.lineTo(W - M, RY + 6);
   ctx.stroke();
 
-  // Remark lines with dotted rules
+  // Two-column remark layout
   ctx.fillStyle = '#475569';
-  ctx.font = '10px "Segoe UI", system-ui, sans-serif';
-  const maxRemarks = 5;
-  for (let i = 0; i < Math.max(maxRemarks, log.remarks.length); i++) {
-    const ly = RY + 22 + i * 18;
+  ctx.font = '9.5px "Segoe UI", system-ui, sans-serif';
+  const colWidth = (W - 2 * M - 20) / 2; // two columns with gap
+  const remarkLineH = 15;
+  const remarksCount = log.remarks.length;
+  const leftColCount = Math.ceil(remarksCount / 2);
+  const totalRemarkRows = Math.max(4, leftColCount);
+
+  for (let i = 0; i < remarksCount; i++) {
+    const col = i < leftColCount ? 0 : 1;
+    const row = col === 0 ? i : i - leftColCount;
+    const x = M + 4 + col * (colWidth + 16);
+    const ly = RY + 20 + row * remarkLineH;
+
     // Dotted line
     ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 0.5;
+    ctx.lineWidth = 0.4;
     ctx.setLineDash([2, 3]);
     ctx.beginPath();
-    ctx.moveTo(M, ly + 4);
-    ctx.lineTo(W - M, ly + 4);
+    ctx.moveTo(x - 2, ly + 4);
+    ctx.lineTo(x + colWidth - 10, ly + 4);
     ctx.stroke();
     ctx.setLineDash([]);
-    // Text
-    if (i < log.remarks.length) {
-      ctx.fillText(log.remarks[i], M + 4, ly);
-    }
+
+    // Text (truncate if too long)
+    ctx.fillStyle = '#475569';
+    const text = log.remarks[i].length > 48 ? log.remarks[i].slice(0, 46) + '…' : log.remarks[i];
+    ctx.fillText(text, x, ly);
   }
+
+  // Dynamic Y for next section based on actual remark rows used
+  const remarksSectionH = totalRemarkRows * remarkLineH + 12;
 
   // ══════════════════════════════════════════════════════════════════════════
   // SHIPPING DOCUMENTS SECTION
   // ══════════════════════════════════════════════════════════════════════════
-  const SY = RY + 22 + maxRemarks * 18 + 10;
+  const SY = RY + 20 + remarksSectionH;
   ctx.fillStyle = '#0f172a';
   ctx.font = 'bold 12px "Segoe UI", system-ui, sans-serif';
   ctx.fillText('Shipping Documents:', M, SY);
