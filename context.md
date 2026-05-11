@@ -61,10 +61,14 @@
 - [x] Read FMCSA HOS PDF (27 pages)
 - [x] Read reference video summary
 - [x] Read assignment instructions
-- [ ] Backend setup
-- [ ] HOS engine
-- [ ] Frontend setup
-- [ ] Map integration
-- [ ] ELD log drawer
-- [ ] Integration
-- [ ] Deployment
+- [x] Backend setup (Django + DRF)
+- [x] HOS engine (11hr, 14hr, 30min, 70/8, fuel, pickup/dropoff)
+- [x] Route service: Switched from ORS (API key expired) → Nominatim + OSRM (free, no key)
+- [x] API tested: Dallas→Houston→LA = 1785mi, 8 stops, 4 daily logs, all HOS compliant
+- [x] Frontend: React + Vite + Tailwind, TripForm, RouteMap, LogSheet, StopsList, TripSummary
+- [x] ELD LogSheet: Canvas-drawn matching FMCSA format (header, 24hr grid, 15min ticks, remarks, recap, signature)
+- [x] Production hardening: whitenoise, gunicorn, logging, throttling, CORS config
+- [x] Deployment configs: Procfile, render.yaml, vercel.json
+- [x] Git repo: github.com/kush07upadhyay/Spotter_App
+- [ ] Final UI polish & edge case testing
+- [ ] Deployment guide

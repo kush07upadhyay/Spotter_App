@@ -1,9 +1,12 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .route_service import geocode, get_route
+from .route_service import geocode, get_route, reverse_geocode
 from .hos_engine import HOSEngine
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TripPlanView(APIView):
@@ -52,6 +55,16 @@ class TripPlanView(APIView):
                 pickup_location=pickup_geo,
                 dropoff_location=dropoff_geo,
             )
+
+            # Step 3.5: Reverse geocode stops with generic names for better UX
+            for stop in trip_plan.stops:
+                if stop.location_name.startswith('Mile ') or stop.location_name.startswith('En route'):
+                    try:
+                        city_name = reverse_geocode(stop.lat, stop.lng)
+                        if city_name and not city_name.startswith(str(stop.lat)[:4]):
+                            stop.location_name = city_name
+                    except Exception:
+                        pass  # Keep generic name if reverse geocode fails
 
             # Step 4: Serialize response
             response_data = {
