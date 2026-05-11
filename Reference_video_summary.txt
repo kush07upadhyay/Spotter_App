@@ -1,0 +1,20 @@
+video link: https://www.youtube.com/watch?v=whxe41XYXS8
+
+This video serves as a comprehensive instructional guide on how to fill out a paper logbook for truck drivers, presented by Schneider driver instructor Henry Frautschy. The logbook is a critical record-keeping document used to track a driver's duty status and ensure compliance with Hours of Service (HOS) regulations (0:24-0:39).
+ 
+Logbook Basics
+Each log page covers a 24-hour period, with the grid divided into 15-minute increments. There are four primary duty status lines (0:40-1:24):
+Line 1 (Off Duty): Time not performing job-related duties.
+Line 2 (Sleeper Berth): Time spent in the sleeping compartment (a location, not an activity).
+Line 3 (Driving): Time spent operating the vehicle.
+Line 4 (On Duty): Time spent on non-driving work (e.g., inspections, loading/unloading).
+ 
+Step-by-Step Logging Procedure
+Henry walks through the manual entry process (1:47-5:34):
+1. Header Information: Fill out the date, driver info, tractor/trailer numbers, and shipper details (1:47-2:25).
+2. Recording Changes: Start the timeline by drawing lines between duty statuses. Whenever a status changes, you must log the city and state in the remark section (2:26-3:00).
+3. Brackets: When the truck is stationary (e.g., during inspections or scaling), use a "bracket" to denote that the vehicle did not move while you remained in an on-duty status (3:15-3:34).
+4. Remarks: Always document specific activities like pre-trip/post-trip inspections, Trailer Integrity (TI) checks, and fueling (1:33-1:46, 3:00-3:08).
+ 
+Finalizing the Log
+At the end of the day, drivers must calculate their total time on each line, ensuring it equals 24 hours. Additionally, you must track the total miles driven and the combined hours of driving and on-duty time (5:35-6:24). Henry emphasizes that accurate record-keeping is not just a legal requirement, but an essential component of road safety.
