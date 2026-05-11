@@ -1,12 +1,12 @@
 """
-Django settings for Spotter ELD Trip Planner.
+Django settings for Trucker Tracker ELD Trip Planner.
 Production-ready configuration with environment variable support.
 """
 from pathlib import Path
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-spotter-dev-key-change-in-prod')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-trucker-tracker-dev-key-change-in-prod')
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')

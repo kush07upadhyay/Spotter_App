@@ -1,4 +1,4 @@
-# 🚛 Spotter — ELD Trip Planner & HOS Compliance
+# 🚛 Trucker Tracker — ELD Trip Planner & HOS Compliance
 
 A full-stack web application that helps commercial truck drivers plan trips with **automatic Hours of Service (HOS) compliance**. Enter your trip details and get an optimized route with all required stops, rests, and fuel breaks — plus auto-generated **ELD daily log sheets** matching the FMCSA Part 395 format.
 
@@ -53,7 +53,7 @@ All FMCSA Part 395 rules automatically enforced:
 ## 🏗️ Architecture
 
 ```
-Spotter_app/
+Trucker_Tracker/
 ├── backend/                    # Django REST API
 │   ├── backend/
 │   │   ├── settings.py         # Production-ready config (whitenoise, logging, throttling)
@@ -326,4 +326,4 @@ This application implements the HOS rules defined in **49 CFR Part 395** for pro
 
 ## 📄 License
 
-This project was built as an assignment submission for Spotter.
+This project was built as an assignment submission for Spotter (Trucker Tracker).

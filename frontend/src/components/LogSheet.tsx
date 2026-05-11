@@ -166,7 +166,7 @@ function renderLog(
   // Row 2
   _field(ctx, M, fy2, 'Total Miles Driving Today:', `${log.total_miles.toFixed(0)}`);
   _field(ctx, 340, fy2, 'Total Mileage Today:', `${log.total_miles.toFixed(0)}`);
-  _field(ctx, 600, fy2, 'Name of Carrier:', 'Spotter Transport LLC');
+  _field(ctx, 600, fy2, 'Name of Carrier:', 'Trucker Tracker LLC');
 
   // Row 3
   _field(ctx, M, fy3, 'Truck/Tractor & Trailer No.:', 'Unit 1024 / TR-5587');
@@ -431,7 +431,7 @@ function renderLog(
   ctx.font = '10px "Segoe UI", system-ui, sans-serif';
   ctx.fillStyle = '#475569';
   ctx.fillText(`DVL or Manifest No.: SPOT-${dayNumber.toString().padStart(3, '0')}-${log.date.replace(/-/g, '')}`, M + 4, SY + 18);
-  ctx.fillText('Shipper & Commodity: General Freight — Spotter Transport LLC', M + 4, SY + 34);
+  ctx.fillText('Shipper & Commodity: General Freight — Trucker Tracker LLC', M + 4, SY + 34);
 
   // ══════════════════════════════════════════════════════════════════════════
   // RECAP SECTION — 70hr/8day compliance tracking

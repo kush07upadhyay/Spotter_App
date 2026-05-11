@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: spotter-api
+    name: trucker-tracker-api
     runtime: python
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
     startCommand: gunicorn backend.wsgi --bind 0.0.0.0:$PORT --workers 3 --timeout 120
@@ -12,4 +12,4 @@ services:
       - key: ALLOWED_HOSTS
         value: '.onrender.com'
       - key: CORS_ALLOWED_ORIGINS
-        value: 'https://spotter-app.vercel.app'
+        value: 'https://trucker-tracker.vercel.app'

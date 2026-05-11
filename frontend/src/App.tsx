@@ -54,7 +54,7 @@ function App() {
               <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-[#1e3a5f]" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Spotter</h1>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Trucker Tracker</h1>
               <p className="text-blue-200 text-xs sm:text-sm hidden sm:block">ELD Trip Planner & HOS Compliance</p>
             </div>
           </div>
@@ -198,7 +198,7 @@ function App() {
 
       {/* Footer */}
       <footer className="text-center text-slate-400 text-xs py-4 sm:py-6 mt-auto border-t border-slate-100 bg-white/50">
-        <p>Spotter ELD Planner &middot; FMCSA Part 395 Compliant &middot; Property Carriers, 70hr/8day</p>
+        <p>Trucker Tracker ELD Planner &middot; FMCSA Part 395 Compliant &middot; Property Carriers, 70hr/8day</p>
         <p className="mt-1 text-slate-300">Uses OpenStreetMap &amp; OSRM — No API keys required</p>
       </footer>
     </div>

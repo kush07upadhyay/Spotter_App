@@ -17,7 +17,7 @@ OSRM_URL = 'https://router.project-osrm.org/route/v1/driving'
 NOMINATIM_REVERSE_URL = 'https://nominatim.openstreetmap.org/reverse'
 
 # Nominatim requires a User-Agent and rate limiting (1 req/sec)
-HEADERS = {'User-Agent': 'SpotterELDApp/1.0 (trip-planner)'}
+HEADERS = {'User-Agent': 'TruckerTrackerApp/1.0 (trip-planner)'}
 _last_nominatim_call = 0.0
 
 
