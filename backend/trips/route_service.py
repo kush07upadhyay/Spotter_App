@@ -1,96 +1,151 @@
 """
-Route service using OpenRouteService API for geocoding and directions.
+Route service using free, no-API-key services:
+- Nominatim (OpenStreetMap) for geocoding
+- OSRM (Open Source Routing Machine) for driving directions
+
+Both are free, reliable, and require no API keys.
 """
+
+import logging
+import time
 import requests
-from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
+NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
+OSRM_URL = 'https://router.project-osrm.org/route/v1/driving'
+NOMINATIM_REVERSE_URL = 'https://nominatim.openstreetmap.org/reverse'
+
+# Nominatim requires a User-Agent and rate limiting (1 req/sec)
+HEADERS = {'User-Agent': 'SpotterELDApp/1.0 (trip-planner)'}
+_last_nominatim_call = 0.0
 
 
-ORS_BASE = 'https://api.openrouteservice.org'
+def _rate_limit_nominatim():
+    """Ensure at least 1 second between Nominatim requests (their policy)."""
+    global _last_nominatim_call
+    now = time.time()
+    elapsed = now - _last_nominatim_call
+    if elapsed < 1.1:
+        time.sleep(1.1 - elapsed)
+    _last_nominatim_call = time.time()
 
 
 def geocode(location_text: str) -> dict:
-    """Geocode a location string to lat/lng coordinates."""
-    url = f'{ORS_BASE}/geocode/search'
+    """Geocode a location string to lat/lng using Nominatim (OpenStreetMap)."""
+    _rate_limit_nominatim()
     params = {
-        'api_key': settings.ORS_API_KEY,
-        'text': location_text,
-        'size': 1,
-        'boundary.country': 'US',
+        'q': location_text,
+        'format': 'json',
+        'limit': 1,
+        'countrycodes': 'us',
+        'addressdetails': 1,
     }
-    resp = requests.get(url, params=params, timeout=10)
+    resp = requests.get(NOMINATIM_URL, params=params, headers=HEADERS, timeout=10)
     resp.raise_for_status()
     data = resp.json()
 
-    if not data.get('features'):
-        raise ValueError(f'Could not geocode location: {location_text}')
+    if not data:
+        raise ValueError(f'Could not geocode location: "{location_text}". Please enter a valid US city/address.')
 
-    feature = data['features'][0]
-    coords = feature['geometry']['coordinates']  # [lng, lat]
-    name = feature['properties'].get('label', location_text)
+    result = data[0]
+    lat = float(result['lat'])
+    lng = float(result['lon'])
+    name = result.get('display_name', location_text)
+    # Shorten display name: "Dallas, Dallas County, Texas, US" → "Dallas, TX"
+    name = _shorten_name(name, result.get('address', {}))
 
-    return {
-        'lat': coords[1],
-        'lng': coords[0],
-        'name': name,
+    logger.info(f'Geocoded "{location_text}" → {name} ({lat:.4f}, {lng:.4f})')
+    return {'lat': lat, 'lng': lng, 'name': name}
+
+
+def reverse_geocode(lat: float, lng: float) -> str:
+    """Reverse geocode coordinates to a city/state name."""
+    _rate_limit_nominatim()
+    params = {
+        'lat': lat,
+        'lon': lng,
+        'format': 'json',
+        'zoom': 10,
+        'addressdetails': 1,
     }
+    try:
+        resp = requests.get(NOMINATIM_REVERSE_URL, params=params, headers=HEADERS, timeout=8)
+        resp.raise_for_status()
+        data = resp.json()
+        addr = data.get('address', {})
+        city = addr.get('city') or addr.get('town') or addr.get('village') or addr.get('county', '')
+        state = addr.get('state', '')
+        if city and state:
+            state_abbr = _state_abbrev(state)
+            return f'{city}, {state_abbr}'
+        return data.get('display_name', f'{lat:.2f}, {lng:.2f}')[:50]
+    except Exception:
+        return f'{lat:.2f}, {lng:.2f}'
 
 
 def get_route(start: dict, end: dict) -> dict:
     """
-    Get driving route between two points.
-    Returns distance, duration, geometry, and waypoints along the route.
+    Get driving route using OSRM (free, no API key needed).
+    Returns distance_miles, duration_hours, geometry, waypoints, and location names.
     """
-    url = f'{ORS_BASE}/v2/directions/driving-hgv'
-    headers = {
-        'Authorization': settings.ORS_API_KEY,
-        'Content-Type': 'application/json',
-    }
-    body = {
-        'coordinates': [
-            [start['lng'], start['lat']],
-            [end['lng'], end['lat']],
-        ],
-        'instructions': True,
-        'geometry': True,
-        'units': 'mi',
+    coords_str = f"{start['lng']},{start['lat']};{end['lng']},{end['lat']}"
+    url = f'{OSRM_URL}/{coords_str}'
+    params = {
+        'overview': 'full',
+        'geometries': 'geojson',
+        'steps': 'true',
+        'annotations': 'true',
     }
 
-    resp = requests.post(url, json=body, headers=headers, timeout=30)
+    resp = requests.get(url, params=params, headers=HEADERS, timeout=30)
     resp.raise_for_status()
     data = resp.json()
 
+    if data.get('code') != 'Ok' or not data.get('routes'):
+        raise ValueError(f'Could not find driving route from {start["name"]} to {end["name"]}.')
+
     route = data['routes'][0]
-    summary = route['summary']
-    distance_miles = summary['distance'] * 0.000621371  # meters to miles
-    duration_hours = summary['duration'] / 3600.0  # seconds to hours
-    geometry = route['geometry']  # encoded polyline
+    distance_meters = route['distance']
+    duration_seconds = route['duration']
+    distance_miles = distance_meters * 0.000621371
+    duration_hours = duration_seconds / 3600.0
 
-    # Decode geometry
-    decoded_coords = _decode_polyline(geometry)
+    # Geometry is GeoJSON LineString: [[lng, lat], ...]
+    geometry = route['geometry']['coordinates']  # list of [lng, lat]
 
-    # Extract waypoints from route steps for location names
+    # Extract waypoints from route steps for named locations
     waypoints = []
-    cumulative_dist = 0
-    for segment in route.get('segments', []):
-        for step in segment.get('steps', []):
-            cumulative_dist += step.get('distance', 0) * 0.000621371
+    cumulative_miles = 0.0
+    for leg in route.get('legs', []):
+        for step in leg.get('steps', []):
+            step_dist = step.get('distance', 0) * 0.000621371
+            cumulative_miles += step_dist
             name = step.get('name', '')
-            if name and step.get('way_points'):
-                wp_idx = step['way_points'][0]
-                if wp_idx < len(decoded_coords):
-                    coord = decoded_coords[wp_idx]
-                    waypoints.append({
-                        'lat': coord[1],
-                        'lng': coord[0],
-                        'name': name,
-                        'miles_from_seg_start': cumulative_dist,
-                    })
+            if name and len(name) > 2:
+                maneuver = step.get('maneuver', {})
+                loc = maneuver.get('location', [0, 0])
+                waypoints.append({
+                    'lat': loc[1],
+                    'lng': loc[0],
+                    'name': name,
+                    'miles_from_seg_start': round(cumulative_miles, 1),
+                })
+
+    # Sample major waypoints (every ~100 miles) for named stops
+    major_waypoints = _sample_major_waypoints(geometry, distance_miles, waypoints)
+
+    logger.info(
+        f'Route: {start["name"]} → {end["name"]}: '
+        f'{distance_miles:.0f} mi, {duration_hours:.1f} hrs, '
+        f'{len(geometry)} coords, {len(major_waypoints)} waypoints'
+    )
 
     return {
         'distance_miles': round(distance_miles, 1),
         'duration_hours': round(duration_hours, 2),
-        'geometry': decoded_coords,
-        'waypoints': waypoints,
+        'geometry': geometry,
+        'waypoints': major_waypoints,
         'start_name': start['name'],
         'end_name': end['name'],
         'start_coords': [start['lat'], start['lng']],
@@ -98,38 +153,55 @@ def get_route(start: dict, end: dict) -> dict:
     }
 
 
-def _decode_polyline(encoded: str) -> list:
-    """Decode a Google-encoded polyline string into a list of [lng, lat] coordinates."""
-    decoded = []
-    i = 0
-    lat = 0
-    lng = 0
+def _sample_major_waypoints(geometry: list, total_miles: float, raw_waypoints: list) -> list:
+    """
+    Select major waypoints roughly every 100 miles along the route.
+    These provide named locations for ELD log remarks.
+    """
+    if not raw_waypoints:
+        return []
 
-    while i < len(encoded):
-        # Latitude
-        shift = 0
-        result = 0
-        while True:
-            b = ord(encoded[i]) - 63
-            i += 1
-            result |= (b & 0x1F) << shift
-            shift += 5
-            if b < 0x20:
-                break
-        lat += (~(result >> 1) if result & 1 else result >> 1)
+    interval = 100.0  # miles
+    result = []
+    next_target = interval
 
-        # Longitude
-        shift = 0
-        result = 0
-        while True:
-            b = ord(encoded[i]) - 63
-            i += 1
-            result |= (b & 0x1F) << shift
-            shift += 5
-            if b < 0x20:
-                break
-        lng += (~(result >> 1) if result & 1 else result >> 1)
+    for wp in raw_waypoints:
+        dist = wp.get('miles_from_seg_start', 0)
+        if dist >= next_target:
+            result.append(wp)
+            next_target = dist + interval
 
-        decoded.append([lng / 1e5, lat / 1e5])
+    return result
 
-    return decoded
+
+def _shorten_name(display_name: str, address: dict) -> str:
+    """Shorten a Nominatim display name to 'City, ST' format."""
+    city = address.get('city') or address.get('town') or address.get('village') or ''
+    state = address.get('state', '')
+    if city and state:
+        return f'{city}, {_state_abbrev(state)}'
+    # Fallback: take first two comma-separated parts
+    parts = display_name.split(',')
+    if len(parts) >= 2:
+        return f'{parts[0].strip()}, {parts[1].strip()}'
+    return display_name[:40]
+
+
+def _state_abbrev(state_name: str) -> str:
+    """Convert full US state name to abbreviation."""
+    states = {
+        'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR',
+        'California': 'CA', 'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE',
+        'Florida': 'FL', 'Georgia': 'GA', 'Hawaii': 'HI', 'Idaho': 'ID',
+        'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA', 'Kansas': 'KS',
+        'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
+        'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS',
+        'Missouri': 'MO', 'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV',
+        'New Hampshire': 'NH', 'New Jersey': 'NJ', 'New Mexico': 'NM', 'New York': 'NY',
+        'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH', 'Oklahoma': 'OK',
+        'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
+        'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT',
+        'Vermont': 'VT', 'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV',
+        'Wisconsin': 'WI', 'Wyoming': 'WY', 'District of Columbia': 'DC',
+    }
+    return states.get(state_name, state_name[:2].upper())

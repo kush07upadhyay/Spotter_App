@@ -12,6 +12,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'map' | 'logs'>('map');
+  const [cycleUsed, setCycleUsed] = useState(0);
 
   const handleSubmit = async (data: {
     current_location: string;
@@ -24,6 +25,7 @@ function App() {
     try {
       const result = await planTrip(data);
       setTripData(result);
+      setCycleUsed(data.current_cycle_used);
       setActiveTab('map');
     } catch (err: any) {
       const msg = err?.response?.data?.error || err.message || 'Failed to plan trip';
@@ -101,7 +103,13 @@ function App() {
                 {activeTab === 'logs' && (
                   <div className="space-y-6">
                     {tripData.daily_logs.map((log, idx) => (
-                      <LogSheet key={idx} log={log} dayNumber={idx + 1} />
+                      <LogSheet
+                        key={idx}
+                        log={log}
+                        dayNumber={idx + 1}
+                        totalDays={tripData.daily_logs.length}
+                        currentCycleUsed={cycleUsed}
+                      />
                     ))}
                   </div>
                 )}
