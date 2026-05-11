@@ -337,6 +337,33 @@ function renderLog(
     ctx.beginPath();
     ctx.arc(x, y2, 3, 0, Math.PI * 2);
     ctx.fill();
+
+    // ── Diagonal remark text (Schneider-style 45° annotation) ──
+    const remark = curr.remarks || curr.location || '';
+    const location = curr.location || '';
+    if (remark || location) {
+      ctx.save();
+      const midY = (y1 + y2) / 2;
+      ctx.translate(x, midY);
+      ctx.rotate(-Math.PI / 4); // 45° counter-clockwise
+
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 8px "Segoe UI", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+
+      // Location above the line
+      if (location) {
+        ctx.fillText(location.length > 22 ? location.slice(0, 20) + '…' : location, 0, -5);
+      }
+      // Reason/remark below the line
+      if (remark && remark !== location) {
+        ctx.font = '7px "Segoe UI", system-ui, sans-serif';
+        ctx.fillStyle = '#475569';
+        ctx.fillText(remark.length > 22 ? remark.slice(0, 20) + '…' : remark, 0, 8);
+      }
+
+      ctx.restore();
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════

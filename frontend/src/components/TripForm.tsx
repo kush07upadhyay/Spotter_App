@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MapPin, Navigation, Package, Clock, Loader2 } from 'lucide-react';
+import { LocationInput } from './LocationInput';
 
 interface TripFormProps {
   onSubmit: (data: {
@@ -43,10 +44,9 @@ export function TripForm({ onSubmit, loading }: TripFormProps) {
               Current Location
             </span>
           </label>
-          <input
-            type="text"
+          <LocationInput
             value={currentLocation}
-            onChange={(e) => setCurrentLocation(e.target.value)}
+            onChange={setCurrentLocation}
             placeholder="e.g., Dallas, TX"
             required
             className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm
@@ -63,10 +63,9 @@ export function TripForm({ onSubmit, loading }: TripFormProps) {
               Pickup Location
             </span>
           </label>
-          <input
-            type="text"
+          <LocationInput
             value={pickupLocation}
-            onChange={(e) => setPickupLocation(e.target.value)}
+            onChange={setPickupLocation}
             placeholder="e.g., Houston, TX"
             required
             className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm
@@ -83,10 +82,9 @@ export function TripForm({ onSubmit, loading }: TripFormProps) {
               Dropoff Location
             </span>
           </label>
-          <input
-            type="text"
+          <LocationInput
             value={dropoffLocation}
-            onChange={(e) => setDropoffLocation(e.target.value)}
+            onChange={setDropoffLocation}
             placeholder="e.g., Los Angeles, CA"
             required
             className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm
