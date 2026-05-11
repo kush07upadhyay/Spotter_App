@@ -27,8 +27,9 @@ function App() {
       setTripData(result);
       setCycleUsed(data.current_cycle_used);
       setActiveTab('map');
-    } catch (err: any) {
-      const msg = err?.response?.data?.error || err.message || 'Failed to plan trip';
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } }; message?: string };
+      const msg = error?.response?.data?.error || error?.message || 'Failed to plan trip';
       setError(msg);
     } finally {
       setLoading(false);

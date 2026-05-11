@@ -5,6 +5,7 @@ __pycache__/
 db.sqlite3
 venv/
 .env
+staticfiles/
 
 # Node
 node_modules/
@@ -22,3 +23,6 @@ Thumbs.db
 
 # PDF reference
 *.pdf
+
+# Test scripts
+test_api.py
