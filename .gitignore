@@ -4,6 +4,7 @@ __pycache__/
 *.egg-info/
 db.sqlite3
 venv/
+.venv/
 .env
 staticfiles/
 
@@ -16,13 +17,21 @@ dist/
 .vscode/
 .idea/
 *.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# PDF reference
-*.pdf
+# Build artifacts
+*.log
+*.pid
 
-# Test scripts
+# Internal/reference files
+context.md
+Assignment_instruction.txt
+Reference_video_summary.txt
+blank-paper-log.png
+fmsca-image.png
 test_api.py
+*.pdf

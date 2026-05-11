@@ -11,9 +11,10 @@ interface TripFormProps {
     current_cycle_used: number;
   }) => void;
   loading: boolean;
+  onReset?: () => void;
 }
 
-export function TripForm({ onSubmit, loading }: TripFormProps) {
+export function TripForm({ onSubmit, loading, onReset }: TripFormProps) {
   const [currentLocation, setCurrentLocation] = useState('');
   const [pickupLocation, setPickupLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
@@ -134,7 +135,7 @@ export function TripForm({ onSubmit, loading }: TripFormProps) {
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !currentLocation.trim() || !pickupLocation.trim() || !dropoffLocation.trim()}
           className="w-full mt-2 bg-[#1e3a5f] hover:bg-[#2d5a8e] text-white font-medium
             py-3 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed
             flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
@@ -151,6 +152,16 @@ export function TripForm({ onSubmit, loading }: TripFormProps) {
             </>
           )}
         </button>
+
+        {onReset && (
+          <button
+            type="button"
+            onClick={onReset}
+            className="w-full mt-2 text-slate-500 hover:text-slate-700 text-sm py-2 transition-colors"
+          >
+            Clear & Start Over
+          </button>
+        )}
       </div>
     </form>
   );
